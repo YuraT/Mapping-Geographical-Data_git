@@ -92,30 +92,39 @@ players_uni_dict = {
  }
 
 from geopy.geocoders import Nominatim
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
+import csv
+#import chart_studio.plotly as py
+
 def get_location(uni):
-    geolocator = Nominatim(user_agent="uni_coordinates")
-    lat_long = {}
-    try:
-        uni_post = uni + " University"
-        location = geolocator.geocode(uni_post)
-    except:
-        try:
-            uni_pre = "University of " + uni
-            location = geolocator.geocode(uni_pre)
-            
-        except:
-            print("failed", uni)
-
-    finally:
-        lat_long = {
-                "lat" : location.latitude,
-                "long" : location.longitude
-            }
-        return lat_long
-
-for player in players_uni_dict:
+    a = "University of "
+    b = " University"
+    geolocator = Nominatim(user_agent="my_map")
+    location1 = geolocator.geocode(a + uni)
+    location2 = geolocator.geocode(uni + b)
+  
+    if location1 is not None:
+        return(location1)
+    else:
+        return(location2)
+        
+lat_long_dict = {}
+for player, university in players_uni_dict.items():
     print(players_uni_dict[player])
-    print (get_location("Incarnate Word (Tex.)"))
+    print(get_location(players_uni_dict[player]))
     print()
 
-#print (get_location("Incarnate Word (Tex.)"))
+    location = get_location(university)
+    lat_long = {}
+    lat_long["latitude"] = location.latitude
+    lat_long["longitude"] = location.longitude
+    lat_long_dict[player] = lat_long
+
+pp.pprint(lat_long_dict)
+
+with open ('player_file.csv', 'w') as player_file:
+    player_writer = csv.writer(player_file)
+    player_writer.writerow(["Player", "Latitude", "Longitude"])
+    for player, latlong in lat_long_dict.items():
+        player_writer.writerow([player, latlong["latitude"], latlong["longitude"]])
